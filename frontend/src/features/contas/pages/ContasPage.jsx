@@ -14,7 +14,7 @@ export default function ContasPage() {
   const [filtroTipo, setFiltroTipo] = useState("all");
   const [editandoId, setEditandoId] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [form, setForm] = useState({ name: "", account_type: "checking" });
+  const [form, setForm] = useState({ name: "", account_type: "checking", initial_balance: "" });
   const { confirmar, dialogo } = useConfirmDialog();
 
   useEffect(() => {
@@ -49,14 +49,18 @@ export default function ContasPage() {
 
   function iniciarCriacao(tipo = "checking") {
     setEditandoId(null);
-    setForm({ name: "", account_type: tipo });
+    setForm({ name: "", account_type: tipo, initial_balance: "" });
     setErro("");
   }
 
   function iniciarEdicao(item) {
     setEditandoId(item.id);
     setMostrarFormulario(true);
-    setForm({ name: item.name, account_type: item.account_type || "checking" });
+    setForm({
+      name: item.name,
+      account_type: item.account_type || "checking",
+      initial_balance: item.initial_balance ?? "",
+    });
     setErro("");
   }
 
@@ -74,12 +78,14 @@ export default function ContasPage() {
         const atualizada = await atualizarConta(editandoId, {
           name: form.name.trim(),
           account_type: form.account_type,
+          initial_balance: Number(form.initial_balance || 0),
         });
         setContas((atual) => atual.map((item) => (item.id === editandoId ? atualizada : item)));
       } else {
         const criada = await criarConta({
           name: form.name.trim(),
           account_type: form.account_type,
+          initial_balance: Number(form.initial_balance || 0),
         });
         setContas((atual) => [criada, ...atual]);
       }
@@ -114,10 +120,10 @@ export default function ContasPage() {
 
   return (
     <main className="mx-auto max-w-7xl">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Módulo</p>
-        <h1 className="mt-2 text-2xl font-black text-ink">Contas</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="rounded-[24px] border border-graphite/10 bg-white/80 p-8 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Módulo</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink font-editorial">Contas</h1>
+        <p className="mt-2 text-sm text-ink/70">
           Gerencie suas contas para organizar onde as transações acontecem e consolidar o controle financeiro.
         </p>
 
@@ -137,7 +143,7 @@ export default function ContasPage() {
                 setMostrarFormulario(true);
               }
             }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
           >
             {mostrarFormulario ? "Fechar painel" : "Nova conta"}
           </button>
@@ -173,4 +179,6 @@ export default function ContasPage() {
     </main>
   );
 }
+
+
 

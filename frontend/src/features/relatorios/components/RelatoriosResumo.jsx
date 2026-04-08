@@ -11,12 +11,14 @@ export default function RelatoriosResumo({ resumo }) {
   return (
     <section className="mt-6 grid gap-3 grid-cols-4">
       {cards.map((card) => (
-        <article key={card.titulo} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">{card.titulo}</p>
-          <p className="mt-2 text-xl font-black text-ink">{card.valor}</p>
+        <article key={card.titulo} className="rounded-2xl border border-graphite/10 bg-paper p-4">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">{card.titulo}</p>
+          <p className="mt-2 text-xl font-semibold text-ink font-editorial">{card.valor}</p>
         </article>
       ))}
     </section>
   );
 }
+
+
 

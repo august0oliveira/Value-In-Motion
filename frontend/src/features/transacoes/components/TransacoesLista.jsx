@@ -28,11 +28,11 @@ export default function TransacoesLista({
   onDelete,
 }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 col-span-2">
+    <article className="rounded-[24px] border border-graphite/10 bg-white/80 p-4 shadow-[0_12px_28px_rgba(19,20,23,0.08)] col-span-2">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-ink">Histórico de transações</h2>
-          <p className="mt-1 text-xs text-slate-500">Filtre por conta, categoria, tipo e descrição.</p>
+          <p className="mt-1 text-xs text-ink/60">Filtre por conta, categoria, tipo e descrição.</p>
         </div>
       </div>
 
@@ -41,12 +41,12 @@ export default function TransacoesLista({
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar descrição"
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+          className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
         />
         <select
           value={filtroTipo}
           onChange={(e) => setFiltroTipo(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+          className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
         >
           <option value="all">Todos os tipos</option>
           <option value="income">Receitas</option>
@@ -55,7 +55,7 @@ export default function TransacoesLista({
         <select
           value={filtroConta}
           onChange={(e) => setFiltroConta(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+          className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
         >
           <option value="all">Todas as contas</option>
           {contas.map((conta) => (
@@ -67,7 +67,7 @@ export default function TransacoesLista({
         <select
           value={filtroCategoria}
           onChange={(e) => setFiltroCategoria(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+          className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
         >
           <option value="all">Todas as categorias</option>
           {categorias.map((categoria) => (
@@ -81,11 +81,11 @@ export default function TransacoesLista({
       {carregando ? (
         <div className="mt-4 space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-14 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-14 animate-pulse rounded-lg bg-graphite/5" />
           ))}
         </div>
       ) : transacoesFiltradas.length === 0 ? (
-        <p className="mt-4 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        <p className="mt-4 rounded-lg bg-paper px-4 py-3 text-sm text-ink/70">
           Nenhuma transação encontrada para esse filtro.
         </p>
       ) : (
@@ -93,11 +93,11 @@ export default function TransacoesLista({
           {transacoesFiltradas.map((item) => (
             <li
               key={item.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-3"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-graphite/10 px-3 py-3"
             >
               <div className="min-w-0">
                 <p className="truncate font-semibold text-ink">{item.description || "Sem descrição"}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-ink/60">
                   {item.occurred_on} |{" "}
                   {item.credit_card
                     ? nomeCartaoPorId[item.credit_card] || `Cartão #${item.credit_card}`
@@ -125,7 +125,7 @@ export default function TransacoesLista({
                 <button
                   type="button"
                   onClick={() => onEdit(item)}
-                  className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
+                  className="rounded-md border border-graphite/20 px-2 py-1 text-xs font-semibold text-ink/80"
                 >
                   Editar
                 </button>
@@ -144,4 +144,5 @@ export default function TransacoesLista({
     </article>
   );
 }
+
 

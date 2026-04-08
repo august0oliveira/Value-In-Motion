@@ -11,6 +11,9 @@ from .models import (
     CardInstallment,
     CardPurchase,
     Category,
+    CreditCardInvoice,
+    CreditCardInvoiceItem,
+    CreditCardInvoicePayment,
     CreditCard,
     Goal,
     Investment,
@@ -42,7 +45,16 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ("id", "name", "account_type", "balance", "owner", "created_at", "updated_at")
+        fields = (
+            "id",
+            "name",
+            "account_type",
+            "initial_balance",
+            "balance",
+            "owner",
+            "created_at",
+            "updated_at",
+        )
         read_only_fields = ("id", "owner", "balance", "created_at", "updated_at")
 
 
@@ -292,6 +304,60 @@ class CardPurchaseSerializer(serializers.ModelSerializer):
                 status="open",
                 transaction=trx,
             )
+
+
+class CreditCardInvoiceItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CreditCardInvoiceItem
+        fields = (
+            "id",
+            "description",
+            "amount",
+            "occurred_on",
+            "transaction",
+            "installment",
+            "created_at",
+        )
+        read_only_fields = fields
+
+
+class CreditCardInvoicePaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CreditCardInvoicePayment
+        fields = (
+            "id",
+            "account",
+            "amount",
+            "paid_on",
+            "transaction",
+            "created_at",
+        )
+        read_only_fields = fields
+
+
+class CreditCardInvoiceSerializer(serializers.ModelSerializer):
+    items = CreditCardInvoiceItemSerializer(many=True, read_only=True)
+    payments = CreditCardInvoicePaymentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CreditCardInvoice
+        fields = (
+            "id",
+            "owner",
+            "credit_card",
+            "period_start",
+            "period_end",
+            "closing_date",
+            "due_date",
+            "status",
+            "total_amount",
+            "paid_amount",
+            "items",
+            "payments",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = fields
 
 
 class InvestmentSerializer(serializers.ModelSerializer):

@@ -16,15 +16,17 @@ function tipoContaLabel(tipo) {
 
 export default function DashboardFiltros({ periodo, setPeriodo, filtroConta, setFiltroConta, contas }) {
   return (
-    <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-3">
+    <section className="mt-4 rounded-[24px] border border-graphite/10 bg-white/70 p-3 shadow-[0_12px_28px_rgba(19,20,23,0.08)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {OPCOES_PERIODO.map((item) => (
             <button
               key={item.valor}
               onClick={() => setPeriodo(item.valor)}
-              className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
-                periodo === item.valor ? "bg-ink text-white" : "bg-slate-100 text-slate-700"
+              className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
+                periodo === item.valor
+                  ? "bg-ink text-paper"
+                  : "border border-graphite/10 bg-paper text-ink/70 hover:bg-ink/5"
               }`}
             >
               {item.label}
@@ -32,10 +34,10 @@ export default function DashboardFiltros({ periodo, setPeriodo, filtroConta, set
           ))}
         </div>
 
-        <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+        <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink/60">
           Conta
           <select
-            className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+            className="rounded-full border border-graphite/20 bg-paper px-3 py-1.5 text-xs uppercase tracking-[0.12em]"
             value={filtroConta}
             onChange={(e) => setFiltroConta(e.target.value)}
           >
@@ -51,4 +53,3 @@ export default function DashboardFiltros({ periodo, setPeriodo, filtroConta, set
     </section>
   );
 }
-

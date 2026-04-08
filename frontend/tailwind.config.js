@@ -4,10 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#0f172a",
-        mint: "#16a34a",
-        sky: "#0ea5e9",
-        clay: "#f1f5f9",
+        ink: "#131417",
+        paper: "#F6F2EA",
+        parchment: "#EAE3D6",
+        lime: "#B7FF3C",
+        electric: "#2E6BFF",
+        coral: "#FF6B5E",
+        graphite: "#1F1F1F",
       },
     },
   },

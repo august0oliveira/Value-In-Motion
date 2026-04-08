@@ -68,7 +68,10 @@ async function requisicao(caminho, opcoes = {}, tentouRefresh = false) {
   }
 
   if (response.status === 204) return null;
-  return response.json();
+  const data = await response.json();
+  // Se DRF estiver com paginação ativa, use a lista dentro de "results".
+  if (data && Array.isArray(data.results)) return data.results;
+  return data;
 }
 
 export async function login(username, password, lastName = "") {
@@ -161,6 +164,16 @@ export const criarParcelamentoCartao = (p) => requisicao("/api/financas/parcelam
 export const atualizarParcelamentoCartao = (id, p) => requisicao(`/api/financas/parcelamentos/${id}/`, { method: "PATCH", body: JSON.stringify(p) });
 export const excluirParcelamentoCartao = (id) => requisicao(`/api/financas/parcelamentos/${id}/`, { method: "DELETE" });
 
+// Faturas de cartao
+export const buscarFaturasCartao = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return requisicao(`/api/financas/faturas-cartao/${query ? "?" + query : ""}`);
+};
+export const fecharFaturaCartao = (id) =>
+  requisicao(`/api/financas/faturas-cartao/${id}/fechar/`, { method: "POST" });
+export const pagarFaturaCartao = (id, p) =>
+  requisicao(`/api/financas/faturas-cartao/${id}/pagar/`, { method: "POST", body: JSON.stringify(p) });
+
 // Categorias
 export const buscarCategorias = () => requisicao("/api/financas/categorias/");
 export const criarCategoria = (p) => requisicao("/api/financas/categorias/", { method: "POST", body: JSON.stringify(p) });
@@ -193,6 +206,11 @@ export const buscarRecorrencias = () => requisicao("/api/financas/recorrencias/"
 export const criarRecorrencia = (p) => requisicao("/api/financas/recorrencias/", { method: "POST", body: JSON.stringify(p) });
 export const atualizarRecorrencia = (id, p) => requisicao(`/api/financas/recorrencias/${id}/`, { method: "PATCH", body: JSON.stringify(p) });
 export const excluirRecorrencia = (id) => requisicao(`/api/financas/recorrencias/${id}/`, { method: "DELETE" });
+export const gerarRecorrencias = (ate) =>
+  requisicao("/api/financas/recorrencias/gerar/", {
+    method: "POST",
+    body: JSON.stringify(ate ? { ate } : {}),
+  });
 
 // Investimentos
 export const buscarInvestimentos = () => requisicao("/api/financas/investimentos/");
@@ -201,3 +219,9 @@ export const atualizarInvestimento = (id, p) => requisicao(`/api/financas/invest
 export const excluirInvestimento = (id) => requisicao(`/api/financas/investimentos/${id}/`, { method: "DELETE" });
 
 export const buscarVisaoFinancas = () => requisicao("/api/financas/");
+
+// Fluxo de caixa projetado
+export const buscarFluxoCaixa = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return requisicao(`/api/financas/fluxo-caixa/${query ? "?" + query : ""}`);
+};

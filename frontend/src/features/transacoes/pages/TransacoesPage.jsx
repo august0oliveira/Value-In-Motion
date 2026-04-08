@@ -9,6 +9,7 @@ import {
   buscarCategorias,
   buscarContas,
   buscarTransacoes,
+  criarTransacao,
   excluirTransacao,
 } from "../../../lib/api";
 
@@ -24,6 +25,11 @@ export default function TransacoesPage() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [importando, setImportando] = useState(false);
+  const [importErros, setImportErros] = useState([]);
+  const [importSucesso, setImportSucesso] = useState("");
+  const [importPreview, setImportPreview] = useState([]);
+  const [importDelimiter, setImportDelimiter] = useState(";");
 
   const [busca, setBusca] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("all");
@@ -75,6 +81,18 @@ export default function TransacoesPage() {
   );
   const nomeCategoriaPorId = useMemo(
     () => Object.fromEntries(categorias.map((item) => [item.id, item.name])),
+    [categorias]
+  );
+  const nomeContaPorNome = useMemo(
+    () => Object.fromEntries(contas.map((item) => [item.name.toLowerCase(), item.id])),
+    [contas]
+  );
+  const nomeCartaoPorNome = useMemo(
+    () => Object.fromEntries(cartoes.map((item) => [item.name.toLowerCase(), item.id])),
+    [cartoes]
+  );
+  const nomeCategoriaPorNome = useMemo(
+    () => Object.fromEntries(categorias.map((item) => [item.name.toLowerCase(), item.id])),
     [categorias]
   );
   const categoriasDoTipo = useMemo(
@@ -167,7 +185,7 @@ export default function TransacoesPage() {
       transaction_type: form.transaction_type,
       category: Number(form.category),
       description: form.description,
-      amount: form.amount,
+      amount: Number(form.amount),
       occurred_on: form.occurred_on,
     };
     if (form.transaction_type === "income") {
@@ -211,17 +229,226 @@ export default function TransacoesPage() {
     }
   }
 
+  function normalizarTipo(valor) {
+    const texto = String(valor || "").trim().toLowerCase();
+    if (["income", "receita", "entrada"].includes(texto)) return "income";
+    if (["expense", "despesa", "saida", "sa�da"].includes(texto)) return "expense";
+    return "";
+  }
+
+  function normalizarValor(valor) {
+    if (valor === null || valor === undefined) return NaN;
+    let texto = String(valor).trim();
+    if (!texto) return NaN;
+    if (texto.includes(".") && texto.includes(",")) {
+      texto = texto.replace(/\./g, "").replace(",", ".");
+    } else if (texto.includes(",")) {
+      texto = texto.replace(",", ".");
+    }
+    const num = Number(texto);
+    return Number.isFinite(num) ? num : NaN;
+  }
+
+  function normalizarData(valor) {
+    const texto = String(valor || "").trim();
+    if (!texto) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
+    const match = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+    return "";
+  }
+
+  function parseCsv(texto, delimiter) {
+    const linhas = texto.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    if (linhas.length < 2) return { rows: [], errors: ["CSV vazio ou sem linhas."] };
+    const headers = linhas[0].split(delimiter).map((h) => h.trim().toLowerCase());
+    const rows = [];
+    const errors = [];
+    for (let i = 1; i < linhas.length; i += 1) {
+      const valores = linhas[i].split(delimiter);
+      const row = {};
+      headers.forEach((h, idx) => {
+        row[h] = valores[idx] !== undefined ? valores[idx].trim() : "";
+      });
+      rows.push({ index: i + 1, data: row });
+    }
+    return { rows, errors };
+  }
+
+  async function handleImportArquivo(event) {
+    const arquivo = event.target.files?.[0];
+    if (!arquivo) return;
+    const texto = await arquivo.text();
+    const { rows, errors } = parseCsv(texto, importDelimiter);
+    setImportErros(errors);
+    setImportPreview(rows.slice(0, 5));
+  }
+
+  async function importarCsv() {
+    setImportando(true);
+    setImportErros([]);
+    setImportSucesso("");
+
+    const input = document.getElementById("csv-import-input");
+    const arquivo = input?.files?.[0];
+    if (!arquivo) {
+      setImportErros(["Selecione um arquivo CSV."]);
+      setImportando(false);
+      return;
+    }
+    const texto = await arquivo.text();
+    const { rows, errors } = parseCsv(texto, importDelimiter);
+    if (errors.length) {
+      setImportErros(errors);
+      setImportando(false);
+      return;
+    }
+
+    let criadas = 0;
+    const falhas = [];
+    for (const row of rows) {
+      const data = row.data;
+      const tipo = normalizarTipo(data.type || data.tipo);
+      const valor = normalizarValor(data.amount || data.valor);
+      const dataIso = normalizarData(data.date || data.data);
+      const categoriaNome = (data.category || data.categoria || "").toLowerCase();
+      const contaNome = (data.account || data.conta || "").toLowerCase();
+      const cartaoNome = (data.credit_card || data.cartao || data.cartão || "").toLowerCase();
+
+      if (!tipo || !dataIso || !Number.isFinite(valor) || !categoriaNome) {
+        falhas.push(`Linha ${row.index}: dados obrigatorios ausentes.`);
+        continue;
+      }
+
+      const categoryId = nomeCategoriaPorNome[categoriaNome];
+      if (!categoryId) {
+        falhas.push(`Linha ${row.index}: categoria nao encontrada (${categoriaNome}).`);
+        continue;
+      }
+
+      let accountId = null;
+      let cardId = null;
+      if (tipo === "income") {
+        accountId = nomeContaPorNome[contaNome];
+        if (!accountId) {
+          falhas.push(`Linha ${row.index}: conta nao encontrada (${contaNome}).`);
+          continue;
+        }
+      } else {
+        if (cartaoNome) {
+          cardId = nomeCartaoPorNome[cartaoNome];
+          if (!cardId) {
+            falhas.push(`Linha ${row.index}: cartao nao encontrado (${cartaoNome}).`);
+            continue;
+          }
+        } else {
+          accountId = nomeContaPorNome[contaNome];
+          if (!accountId) {
+            falhas.push(`Linha ${row.index}: conta nao encontrada (${contaNome}).`);
+            continue;
+          }
+        }
+      }
+
+      const payload = {
+        transaction_type: tipo,
+        category: Number(categoryId),
+        description: data.description || data.descricao || "",
+        amount: Number(valor),
+        occurred_on: dataIso,
+        account: accountId ? Number(accountId) : null,
+        credit_card: cardId ? Number(cardId) : null,
+      };
+
+      try {
+        const criada = await criarTransacao(payload);
+        setTransacoes((atual) => [criada, ...atual]);
+        criadas += 1;
+      } catch (e) {
+        falhas.push(`Linha ${row.index}: ${e.message}`);
+      }
+    }
+
+    setImportErros(falhas);
+    setImportSucesso(`Importadas: ${criadas}.`);
+    setImportando(false);
+  }
+
   return (
     <main className="mx-auto max-w-7xl">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Modulo</p>
-        <h1 className="mt-2 text-2xl font-black text-ink">Transações</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="rounded-[24px] border border-graphite/10 bg-white/80 p-8 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Modulo</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink font-editorial">Transações</h1>
+        <p className="mt-2 text-sm text-ink/70">
           Consulte e filtre suas movimentações em um único lugar, com separacao por conta, categoria e tipo.
         </p>
-        <p className="mt-2 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-700">
+        <p className="mt-2 rounded-xl border border-graphite/10 bg-paper px-3 py-2 text-sm text-ink/70">
           Novas transações devem ser lançadas no Dashboard pelos botoes "Nova receita" e "Nova despesa".
         </p>
+        <section className="mt-4 rounded-2xl border border-graphite/10 bg-paper p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-ink font-editorial">Importar CSV</h2>
+              <p className="mt-1 text-xs text-ink/60">
+                Cabecalhos esperados: date, description, amount, type, category, account, credit_card.
+              </p>
+            </div>
+            <select
+              value={importDelimiter}
+              onChange={(e) => setImportDelimiter(e.target.value)}
+              className="rounded-xl border border-graphite/20 bg-white px-3 py-2 text-xs"
+            >
+              <option value=";">Separador ;</option>
+              <option value=",">Separador ,</option>
+            </select>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input
+              id="csv-import-input"
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleImportArquivo}
+              className="text-sm"
+            />
+            <button
+              type="button"
+              onClick={importarCsv}
+              disabled={importando}
+              className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-paper hover:bg-graphite disabled:opacity-60"
+            >
+              {importando ? "Importando..." : "Importar"}
+            </button>
+          </div>
+
+          {importSucesso ? (
+            <p className="mt-3 rounded-xl border border-graphite/10 bg-white px-3 py-2 text-sm text-ink/70">
+              {importSucesso}
+            </p>
+          ) : null}
+
+          {importErros.length ? (
+            <div className="mt-3 rounded-xl border border-coral/20 bg-coral/10 px-3 py-2 text-sm text-ink/80">
+              {importErros.slice(0, 5).map((msg) => (
+                <p key={msg}>{msg}</p>
+              ))}
+              {importErros.length > 5 ? <p>...{importErros.length - 5} erros adicionais</p> : null}
+            </div>
+          ) : null}
+
+          {importPreview.length ? (
+            <div className="mt-3 rounded-xl border border-graphite/10 bg-white/80 p-3 text-xs text-ink/70">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-ink/50">Preview</p>
+              <ul className="mt-2 space-y-1">
+                {importPreview.map((row) => (
+                  <li key={row.index}>
+                    {row.data.date || row.data.data} | {row.data.description || row.data.descricao} | {row.data.amount || row.data.valor} | {row.data.type || row.data.tipo}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </section>
 
         <TransacoesResumo resumo={resumo} />
 
@@ -237,7 +464,7 @@ export default function TransacoesPage() {
                 setMostrarPainelEdicao(true);
               }
             }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
           >
             {mostrarPainelEdicao ? "Fechar painel de edição" : "Abrir painel de edição"}
           </button>
@@ -257,9 +484,9 @@ export default function TransacoesPage() {
               onCancel={cancelarEdicao}
             />
           ) : mostrarPainelEdicao ? (
-            <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4 col-span-1">
+            <article className="rounded-2xl border border-graphite/10 bg-paper p-4 col-span-1">
               <h2 className="text-base font-bold text-ink">Edição de transação</h2>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-ink/70">
                 Clique em "Editar" em uma transação da lista para carregar os dados neste painel.
               </p>
             </article>
@@ -291,4 +518,12 @@ export default function TransacoesPage() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
 

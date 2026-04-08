@@ -78,27 +78,27 @@ export default function AppShell() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto flex max-w-[1440px] gap-4 p-4">
+    <div className="min-h-screen bg-paper text-ink">
+      <div className="mx-auto flex max-w-[1480px] gap-6 p-6">
 
         {/* Sidebar */}
         <aside
-          className={`shrink-0 flex flex-col rounded-2xl bg-ink text-white transition-all duration-300 ${
+          className={`shrink-0 flex flex-col rounded-[28px] bg-graphite text-white shadow-[0_20px_60px_rgba(19,20,23,0.28)] transition-all duration-300 ${
             minimizado ? "w-16" : "w-64"
           }`}
-          style={{ minHeight: "calc(100vh - 2rem)", padding: "1.25rem 0.75rem" }}
+          style={{ minHeight: "calc(100vh - 3rem)", padding: "1.5rem 0.9rem" }}
         >
           {/* Topo */}
-          <div className="flex items-center justify-between mb-6 px-1">
+          <div className="flex items-center justify-between mb-7 px-1">
             {!minimizado && (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-400">VIMO</p>
-                <p className="text-sm font-bold text-white leading-tight">Value in Motion</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-lime">VIMO</p>
+                <p className="text-sm font-semibold text-white/90 leading-tight">Value in Motion</p>
               </div>
             )}
             <button
               onClick={alternarMenu}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/20 hover:bg-white/10 transition ml-auto"
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition ml-auto"
               title={minimizado ? "Expandir" : "Minimizar"}
             >
               <Icone
@@ -110,14 +110,14 @@ export default function AppShell() {
 
           {/* Saudação */}
           {!minimizado && (
-            <div className="mb-4 px-2 py-2 rounded-xl bg-white/5 border border-white/10">
-              <p className="text-xs text-slate-400">Bem-vindo,</p>
+            <div className="mb-5 px-3 py-3 rounded-2xl bg-white/5 border border-white/10">
+              <p className="text-xs text-white/50 uppercase tracking-[0.18em]">Bem-vindo</p>
               <p className="text-sm font-semibold text-white truncate">{nomeUsuario}</p>
             </div>
           )}
 
           {/* Nav */}
-          <nav className="flex-1 space-y-0.5 overflow-y-auto">
+          <nav className="flex-1 space-y-1 overflow-y-auto">
             {itensMenu.map((item) => (
               <NavLink
                 key={item.to}
@@ -127,8 +127,8 @@ export default function AppShell() {
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                      : "text-slate-400 hover:bg-white/8 hover:text-white border border-transparent"
+                      ? "bg-lime/15 text-lime border border-lime/40 shadow-[0_6px_16px_rgba(183,255,60,0.2)]"
+                      : "text-white/60 hover:bg-white/10 hover:text-white border border-transparent"
                   }`
                 }
               >
@@ -142,7 +142,7 @@ export default function AppShell() {
           <div className="mt-4 pt-4 border-t border-white/10">
             <button
               onClick={encerrarSessao}
-              className={`flex items-center gap-2.5 w-full rounded-xl px-2.5 py-2 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-all ${
+              className={`flex items-center gap-2.5 w-full rounded-xl px-2.5 py-2 text-sm font-medium text-white/60 hover:bg-coral/10 hover:text-coral border border-transparent hover:border-coral/30 transition-all ${
                 minimizado ? "justify-center" : ""
               }`}
               title="Sair"

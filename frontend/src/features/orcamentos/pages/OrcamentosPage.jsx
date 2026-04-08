@@ -242,7 +242,7 @@ export default function OrcamentosPage() {
   function classeBadge(status) {
     if (status === "exceeded") return "bg-rose-100 text-rose-700";
     if (status === "alert") return "bg-amber-100 text-amber-700";
-    if (status === "paused") return "bg-slate-100 text-slate-700";
+    if (status === "paused") return "bg-graphite/5 text-ink/80";
     return "bg-emerald-100 text-emerald-700";
   }
 
@@ -255,33 +255,33 @@ export default function OrcamentosPage() {
 
   return (
     <main className="mx-auto max-w-7xl">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Modulo</p>
-        <h1 className="mt-2 text-2xl font-black text-ink">Orcamentos</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="rounded-[24px] border border-graphite/10 bg-white/80 p-8 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Modulo</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink font-editorial">Orcamentos</h1>
+        <p className="mt-2 text-sm text-ink/70">
           Defina limites por categoria e acompanhe o consumo mensal com alertas de risco.
         </p>
 
         <div className="mt-6 grid gap-3 grid-cols-5">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Ativos</p>
-            <p className="mt-1 text-xl font-black text-ink">{resumo.ativos}</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Ativos</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial">{resumo.ativos}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Alertas</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Alertas</p>
             <p className="mt-1 text-xl font-black text-amber-700">{resumo.alertas}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Estourados</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Estourados</p>
             <p className="mt-1 text-xl font-black text-rose-700">{resumo.estourados}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Limite total</p>
-            <p className="mt-1 text-xl font-black text-ink">{formatoMoeda.format(resumo.limiteTotal)}</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Limite total</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial">{formatoMoeda.format(resumo.limiteTotal)}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Gasto total</p>
-            <p className="mt-1 text-xl font-black text-ink">{formatoMoeda.format(resumo.gastoTotal)}</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Gasto total</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial">{formatoMoeda.format(resumo.gastoTotal)}</p>
           </div>
         </div>
 
@@ -290,7 +290,7 @@ export default function OrcamentosPage() {
         {carregando ? (
           <div className="mt-6 space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-100" />
+              <div key={i} className="h-16 animate-pulse rounded-xl bg-graphite/5" />
             ))}
           </div>
         ) : (
@@ -301,18 +301,18 @@ export default function OrcamentosPage() {
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   placeholder="Buscar categoria"
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                  className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                 />
                 <input
                   type="month"
                   value={filtroMes}
                   onChange={(e) => setFiltroMes(e.target.value)}
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                  className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                 />
                 <select
                   value={filtroStatus}
                   onChange={(e) => setFiltroStatus(e.target.value)}
-                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                  className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                 >
                   <option value="all">Todos os status</option>
                   <option value="ok">Dentro do limite</option>
@@ -333,7 +333,7 @@ export default function OrcamentosPage() {
                     setMostrarFormulario(true);
                   }
                 }}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+                className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
               >
                 {mostrarFormulario ? "Fechar painel" : "Novo orcamento"}
               </button>
@@ -341,17 +341,17 @@ export default function OrcamentosPage() {
 
             <div className={`mt-4 ${mostrarFormulario ? "grid gap-4 grid-cols-3" : ""}`}>
               {mostrarFormulario ? (
-                <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4 col-span-1">
+                <article className="rounded-2xl border border-graphite/10 bg-paper p-4 col-span-1">
                   <h2 className="text-base font-bold text-ink">
                     {editandoId ? `Editar orcamento #${editandoId}` : "Novo orcamento"}
                   </h2>
                   <form className="mt-3 space-y-3" onSubmit={salvarOrcamento}>
                     <label className="block text-sm">
-                      <span className="mb-1 block text-slate-600">Categoria de despesa</span>
+                      <span className="mb-1 block text-ink/70">Categoria de despesa</span>
                       <select
                         value={form.category}
                         onChange={(e) => setForm((atual) => ({ ...atual, category: e.target.value }))}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                        className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                       >
                         <option value="">Selecione</option>
                         {categoriasDespesa.map((item) => (
@@ -363,29 +363,29 @@ export default function OrcamentosPage() {
                     </label>
 
                     <label className="block text-sm">
-                      <span className="mb-1 block text-slate-600">Mes de referencia</span>
+                      <span className="mb-1 block text-ink/70">Mes de referencia</span>
                       <input
                         type="month"
                         value={form.month_ref}
                         onChange={(e) => setForm((atual) => ({ ...atual, month_ref: e.target.value }))}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                        className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                       />
                     </label>
 
                     <label className="block text-sm">
-                      <span className="mb-1 block text-slate-600">Limite</span>
+                      <span className="mb-1 block text-ink/70">Limite</span>
                       <input
                         type="number"
                         min="0.01"
                         step="0.01"
                         value={form.limit_amount}
                         onChange={(e) => setForm((atual) => ({ ...atual, limit_amount: e.target.value }))}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                        className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                       />
                     </label>
 
                     <label className="block text-sm">
-                      <span className="mb-1 block text-slate-600">Alerta (%)</span>
+                      <span className="mb-1 block text-ink/70">Alerta (%)</span>
                       <input
                         type="number"
                         min="1"
@@ -393,11 +393,11 @@ export default function OrcamentosPage() {
                         step="1"
                         value={form.alert_percent}
                         onChange={(e) => setForm((atual) => ({ ...atual, alert_percent: e.target.value }))}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                        className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                       />
                     </label>
 
-                    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                    <label className="inline-flex items-center gap-2 text-sm text-ink/80">
                       <input
                         type="checkbox"
                         checked={form.active}
@@ -419,7 +419,7 @@ export default function OrcamentosPage() {
                           limparFormulario();
                           setMostrarFormulario(false);
                         }}
-                        className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+                        className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
                       >
                         Cancelar
                       </button>
@@ -428,24 +428,24 @@ export default function OrcamentosPage() {
                 </article>
               ) : null}
 
-              <article className="rounded-2xl border border-slate-200 bg-white p-4 col-span-2">
+              <article className="rounded-[24px] border border-graphite/10 bg-white/80 p-4 shadow-[0_12px_28px_rgba(19,20,23,0.08)] col-span-2">
                 <h2 className="text-base font-bold text-ink">Lista de orcamentos</h2>
-                <p className="mt-1 text-xs text-slate-500">Acompanhe consumo por categoria e ajuste limites.</p>
+                <p className="mt-1 text-xs text-ink/60">Acompanhe consumo por categoria e ajuste limites.</p>
 
                 {orcamentosFiltrados.length === 0 ? (
-                  <p className="mt-4 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <p className="mt-4 rounded-lg bg-paper px-4 py-3 text-sm text-ink/70">
                     Nenhum orcamento encontrado para os filtros selecionados.
                   </p>
                 ) : (
                   <ul className="mt-4 space-y-3">
                     {orcamentosFiltrados.map((item) => (
-                      <li key={item.id} className="rounded-xl border border-slate-200 p-3">
+                      <li key={item.id} className="rounded-2xl border border-graphite/10 bg-paper p-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
                             <p className="font-semibold text-ink">
                               {nomeCategoriaPorId[item.category] || `Categoria #${item.category}`}
                             </p>
-                            <p className="text-xs text-slate-500">{mesLabel(item.month_ref)}</p>
+                            <p className="text-xs text-ink/60">{mesLabel(item.month_ref)}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${classeBadge(item.status)}`}>
@@ -454,7 +454,7 @@ export default function OrcamentosPage() {
                             <button
                               type="button"
                               onClick={() => iniciarEdicao(item)}
-                              className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
+                              className="rounded-md border border-graphite/20 px-2 py-1 text-xs font-semibold text-ink/80"
                             >
                               Editar
                             </button>
@@ -468,14 +468,14 @@ export default function OrcamentosPage() {
                           </div>
                         </div>
 
-                        <div className="mt-3 h-2 rounded-full bg-slate-100">
+                        <div className="mt-3 h-2 rounded-full bg-graphite/5">
                           <div
                             className={`h-2 rounded-full ${classeBarra(item.status)}`}
                             style={{ width: `${Math.min(100, Math.max(0, item.percentual))}%` }}
                           />
                         </div>
 
-                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-ink/70">
                           <span>
                             Gasto: <strong>{formatoMoeda.format(item.gasto)}</strong>
                           </span>
@@ -502,4 +502,6 @@ export default function OrcamentosPage() {
     </main>
   );
 }
+
+
 

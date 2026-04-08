@@ -6,14 +6,18 @@ import useConfirmDialog from "../../../hooks/useConfirmDialog";
 import {
   atualizarCartao,
   atualizarParcelamentoCartao,
+  buscarContas,
   buscarCartoes,
   buscarCategorias,
+  buscarFaturasCartao,
   buscarParcelamentosCartao,
   buscarTransacoes,
   criarCartao,
   criarParcelamentoCartao,
   excluirCartao,
   excluirParcelamentoCartao,
+  fecharFaturaCartao,
+  pagarFaturaCartao,
 } from "../../../lib/api";
 
 function dataIso(data) {
@@ -48,13 +52,19 @@ function periodoFaturaAtual(cartao) {
 
 export default function CartoesPage() {
   const [cartoes, setCartoes] = useState([]);
+  const [contas, setContas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [transacoes, setTransacoes] = useState([]);
   const [parcelamentos, setParcelamentos] = useState([]);
+  const [faturas, setFaturas] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [salvandoParcelamento, setSalvandoParcelamento] = useState(false);
+  const [pagandoId, setPagandoId] = useState(null);
+  const [fechandoId, setFechandoId] = useState(null);
+  const [pagamentos, setPagamentos] = useState({});
+  const [faturaExpandida, setFaturaExpandida] = useState(null);
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("all");
   const [editandoId, setEditandoId] = useState(null);
@@ -82,16 +92,20 @@ export default function CartoesPage() {
   useEffect(() => {
     async function carregar() {
       try {
-        const [cartoesApi, categoriasApi, transacoesApi, parcelamentosApi] = await Promise.all([
+        const [cartoesApi, contasApi, categoriasApi, transacoesApi, parcelamentosApi, faturasApi] = await Promise.all([
           buscarCartoes(),
+          buscarContas(),
           buscarCategorias(),
           buscarTransacoes(),
           buscarParcelamentosCartao(),
+          buscarFaturasCartao(),
         ]);
         setCartoes(cartoesApi);
+        setContas(contasApi);
         setCategorias(categoriasApi);
         setTransacoes(transacoesApi);
         setParcelamentos(parcelamentosApi);
+        setFaturas(faturasApi);
       } catch (e) {
         setErro(e.message);
       } finally {
@@ -100,6 +114,13 @@ export default function CartoesPage() {
     }
     carregar();
   }, []);
+
+  const formatoData = useMemo(() => new Intl.DateTimeFormat("pt-BR"), []);
+
+  async function atualizarFaturas() {
+    const faturasApi = await buscarFaturasCartao();
+    setFaturas(faturasApi);
+  }
 
   const cartoesFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -263,7 +284,7 @@ export default function CartoesPage() {
         credit_card: Number(formParcelamento.credit_card),
         category: Number(formParcelamento.category),
         description: formParcelamento.description.trim(),
-        total_amount: formParcelamento.total_amount,
+        total_amount: Number(formParcelamento.total_amount),
         installments_count: Number(formParcelamento.installments_count),
         purchase_date: formParcelamento.purchase_date,
       };
@@ -325,12 +346,59 @@ export default function CartoesPage() {
     setErro("");
   }
 
+  function atualizarPagamento(invoiceId, campo, valor) {
+    setPagamentos((atual) => ({
+      ...atual,
+      [invoiceId]: { ...(atual[invoiceId] || {}), [campo]: valor },
+    }));
+  }
+
+  async function fecharFatura(invoice) {
+    setFechandoId(invoice.id);
+    setErro("");
+    try {
+      await fecharFaturaCartao(invoice.id);
+      await atualizarFaturas();
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setFechandoId(null);
+    }
+  }
+
+  async function pagarFatura(invoice) {
+    const pagamento = pagamentos[invoice.id] || {};
+    if (!pagamento.account || !pagamento.amount) {
+      setErro("Informe conta e valor para pagar a fatura.");
+      return;
+    }
+    setPagandoId(invoice.id);
+    setErro("");
+    try {
+      await pagarFaturaCartao(invoice.id, {
+        account: pagamento.account,
+        amount: Number(pagamento.amount),
+        paid_on: dataIso(new Date()),
+      });
+      await atualizarFaturas();
+      setPagamentos((atual) => ({ ...atual, [invoice.id]: { account: "", amount: "" } }));
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setPagandoId(null);
+    }
+  }
+
+  function alternarDetalheFatura(id) {
+    setFaturaExpandida((atual) => (atual === id ? null : id));
+  }
+
   return (
     <main className="mx-auto max-w-7xl">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Modulo</p>
-        <h1 className="mt-2 text-2xl font-black text-ink">Cartões de crédito</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="rounded-[24px] border border-graphite/10 bg-white/80 p-8 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Modulo</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink font-editorial">Cartões de crédito</h1>
+        <p className="mt-2 text-sm text-ink/70">
           Cadastre seus cartões com limite, dia de fechamento e dia de vencimento para preparar faturas e alertas.
         </p>
 
@@ -338,11 +406,182 @@ export default function CartoesPage() {
 
         {erro ? <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erro}</p> : null}
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div className="mt-6 rounded-[24px] border border-graphite/10 bg-white/80 p-5 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-ink" style={{ fontFamily: "Fraunces, serif" }}>
+                Faturas do cartao
+              </h2>
+              <p className="mt-1 text-xs text-ink/60">
+                Acompanhe fechamento, vencimento e pagamentos.
+              </p>
+            </div>
+          </div>
+
+          {faturas.length === 0 ? (
+            <p className="mt-4 rounded-xl border border-graphite/10 bg-paper px-4 py-3 text-sm text-ink/70">
+              Nenhuma fatura encontrada ainda.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {faturas.slice(0, 8).map((invoice) => {
+                const restante = Number(invoice.total_amount) - Number(invoice.paid_amount || 0);
+                const pagamento = pagamentos[invoice.id] || {};
+                const nomeCartao =
+                  cartoes.find((item) => Number(item.id) === Number(invoice.credit_card))?.name || "Cartao";
+                const aberta = invoice.status === "open";
+                return (
+                  <li key={invoice.id} className="rounded-2xl border border-graphite/10 bg-paper p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-ink">{nomeCartao}</p>
+                        <p className="text-xs text-ink/60">
+                          Periodo {formatoData.format(new Date(invoice.period_start))} -{" "}
+                          {formatoData.format(new Date(invoice.period_end))} | Vencimento{" "}
+                          {formatoData.format(new Date(invoice.due_date))}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                            invoice.status === "paid"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : invoice.status === "closed"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-paper text-ink/70 border border-graphite/20"
+                          }`}
+                        >
+                          {invoice.status === "paid"
+                            ? "Paga"
+                            : invoice.status === "closed"
+                              ? "Fechada"
+                              : "Aberta"}
+                        </span>
+                        <span className="text-sm font-semibold text-ink">
+                          R$ {Number(invoice.total_amount).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => alternarDetalheFatura(invoice.id)}
+                        className="rounded-xl border border-graphite/20 bg-paper px-3 py-1.5 text-xs font-semibold text-ink/80 hover:bg-ink/5"
+                      >
+                        {faturaExpandida === invoice.id ? "Ocultar detalhes" : "Ver detalhes"}
+                      </button>
+                      {invoice.status !== "paid" ? (
+                        <button
+                          type="button"
+                          onClick={() => fecharFatura(invoice)}
+                          disabled={fechandoId === invoice.id}
+                          className="rounded-xl border border-graphite/20 bg-paper px-3 py-1.5 text-xs font-semibold text-ink/80 hover:bg-ink/5 disabled:opacity-60"
+                        >
+                          {fechandoId === invoice.id ? "Fechando..." : "Fechar fatura"}
+                        </button>
+                      ) : null}
+
+                      {invoice.status !== "paid" ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <select
+                            value={pagamento.account || ""}
+                            onChange={(e) => atualizarPagamento(invoice.id, "account", e.target.value)}
+                            className="rounded-xl border border-graphite/20 bg-white px-3 py-1.5 text-xs"
+                          >
+                            <option value="">Conta para pagamento</option>
+                            {contas.map((conta) => (
+                              <option key={conta.id} value={conta.id}>
+                                {conta.name}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={pagamento.amount || ""}
+                            onChange={(e) => atualizarPagamento(invoice.id, "amount", e.target.value)}
+                            placeholder={`Valor (restante R$ ${restante.toFixed(2)})`}
+                            className="rounded-xl border border-graphite/20 bg-white px-3 py-1.5 text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => pagarFatura(invoice)}
+                            disabled={pagandoId === invoice.id}
+                            className="rounded-xl bg-ink px-3 py-1.5 text-xs font-semibold text-paper hover:bg-graphite disabled:opacity-60"
+                          >
+                            {pagandoId === invoice.id ? "Pagando..." : "Pagar"}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-ink/60">
+                          Pago. Total recebido: R$ {Number(invoice.paid_amount || 0).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    {faturaExpandida === invoice.id ? (
+                      <div className="mt-4 rounded-2xl border border-graphite/10 bg-white/80 p-4">
+                        {aberta ? (
+                          <p className="text-xs text-ink/60">
+                            A fatura ainda esta aberta. Feche para travar os itens e revisar.
+                          </p>
+                        ) : (
+                          <>
+                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-ink/60">
+                              <span>Itens: {invoice.items?.length || 0}</span>
+                              <span>Pago: R$ {Number(invoice.paid_amount || 0).toFixed(2)}</span>
+                              <span>Restante: R$ {Math.max(0, restante).toFixed(2)}</span>
+                            </div>
+                            {invoice.items && invoice.items.length > 0 ? (
+                              <ul className="space-y-2">
+                                {invoice.items.map((item) => (
+                                  <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                                    <div className="min-w-0">
+                                      <p className="truncate text-ink">{item.description || "Despesa no cartao"}</p>
+                                      <p className="text-[11px] text-ink/60">
+                                        {formatoData.format(new Date(item.occurred_on))}
+                                      </p>
+                                    </div>
+                                    <span className="text-sm font-semibold text-ink">
+                                      R$ {Number(item.amount).toFixed(2)}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-xs text-ink/60">Nenhum item registrado para esta fatura.</p>
+                            )}
+
+                            {invoice.payments && invoice.payments.length > 0 ? (
+                              <div className="mt-4 border-t border-graphite/10 pt-3">
+                                <p className="text-[11px] uppercase tracking-[0.16em] text-ink/60">Pagamentos</p>
+                                <ul className="mt-2 space-y-1 text-xs text-ink/70">
+                                  {invoice.payments.map((payment) => (
+                                    <li key={payment.id} className="flex items-center justify-between">
+                                      <span>{formatoData.format(new Date(payment.paid_on))}</span>
+                                      <span>R$ {Number(payment.amount).toFixed(2)}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : null}
+                          </>
+                        )}
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-graphite/10 bg-paper p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-ink">Parcelamentos no cartão</h2>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-ink/60">
                 Cada parcela gera automaticamente uma despesa futura no cartão correspondente.
               </p>
             </div>
@@ -357,7 +596,7 @@ export default function CartoesPage() {
                   return proximo;
                 })
               }
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+              className="rounded-lg border border-graphite/20 bg-white px-4 py-2 text-sm font-semibold text-ink/80"
             >
               {mostrarParcelamento ? "Fechar parcelamento" : "Nova compra parcelada"}
             </button>
@@ -368,7 +607,7 @@ export default function CartoesPage() {
               <select
                 value={formParcelamento.credit_card}
                 onChange={(e) => setFormParcelamento((atual) => ({ ...atual, credit_card: e.target.value }))}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-graphite/20 px-3 py-2 text-sm"
               >
                 <option value="">Selecione o cartão</option>
                 {cartoes.filter((item) => item.is_active).map((item) => (
@@ -380,7 +619,7 @@ export default function CartoesPage() {
               <select
                 value={formParcelamento.category}
                 onChange={(e) => setFormParcelamento((atual) => ({ ...atual, category: e.target.value }))}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-graphite/20 px-3 py-2 text-sm"
               >
                 <option value="">Selecione a categoria</option>
                 {categoriasDespesa.map((item) => (
@@ -393,7 +632,7 @@ export default function CartoesPage() {
                 value={formParcelamento.description}
                 onChange={(e) => setFormParcelamento((atual) => ({ ...atual, description: e.target.value }))}
                 placeholder="Descrição da compra"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-graphite/20 px-3 py-2 text-sm"
               />
               <input
                 type="number"
@@ -402,7 +641,7 @@ export default function CartoesPage() {
                 value={formParcelamento.total_amount}
                 onChange={(e) => setFormParcelamento((atual) => ({ ...atual, total_amount: e.target.value }))}
                 placeholder="Valor total"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-graphite/20 px-3 py-2 text-sm"
               />
               <input
                 type="number"
@@ -411,13 +650,13 @@ export default function CartoesPage() {
                 value={formParcelamento.installments_count}
                 onChange={(e) => setFormParcelamento((atual) => ({ ...atual, installments_count: e.target.value }))}
                 placeholder="Parcelas"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-graphite/20 px-3 py-2 text-sm"
               />
               <input
                 type="date"
                 value={formParcelamento.purchase_date}
                 onChange={(e) => setFormParcelamento((atual) => ({ ...atual, purchase_date: e.target.value }))}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-graphite/20 px-3 py-2 text-sm"
               />
               <div className="col-span-3">
                 <button
@@ -440,7 +679,7 @@ export default function CartoesPage() {
               <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2">
                 <div>
                   <p className="text-sm font-semibold text-ink">{item.description}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-ink/60">
                     {item.installments_count}x | Total R$ {Number(item.total_amount || 0).toFixed(2)} | Compra em{" "}
                     {item.purchase_date}
                   </p>
@@ -448,7 +687,7 @@ export default function CartoesPage() {
                 <button
                   type="button"
                   onClick={() => iniciarEdicaoParcelamento(item)}
-                  className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
+                  className="rounded-md border border-graphite/20 px-2 py-1 text-xs font-semibold text-ink/80"
                 >
                   Editar
                 </button>
@@ -476,7 +715,7 @@ export default function CartoesPage() {
                 setMostrarFormulario(true);
               }
             }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
           >
             {mostrarFormulario ? "Fechar painel" : "Novo cartão"}
           </button>
@@ -512,4 +751,6 @@ export default function CartoesPage() {
     </main>
   );
 }
+
+
 

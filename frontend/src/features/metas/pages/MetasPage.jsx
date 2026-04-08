@@ -215,8 +215,8 @@ export default function MetasPage() {
 
   function classeStatus(status) {
     if (status === "completed") return "bg-emerald-100 text-emerald-700";
-    if (status === "paused") return "bg-slate-100 text-slate-700";
-    return "bg-sky-100 text-sky-700";
+    if (status === "paused") return "bg-graphite/5 text-ink/80";
+    return "bg-paper text-ink/70";
   }
 
   function labelStatus(status) {
@@ -239,33 +239,33 @@ export default function MetasPage() {
 
   return (
     <main className="mx-auto max-w-7xl">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Módulo</p>
-        <h1 className="mt-2 text-2xl font-black text-ink">Metas</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="rounded-[24px] border border-graphite/10 bg-white/80 p-8 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Módulo</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink font-editorial">Metas</h1>
+        <p className="mt-2 text-sm text-ink/70">
           Defina objetivos financeiros com prazo e acompanhe o progresso de cada meta.
         </p>
 
         <div className="mt-6 grid gap-3 grid-cols-5">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Total</p>
-            <p className="mt-1 text-xl font-black text-ink">{resumo.total}</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Total</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial">{resumo.total}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Concluídas</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Concluídas</p>
             <p className="mt-1 text-xl font-black text-emerald-700">{resumo.concluidas}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Pausadas</p>
-            <p className="mt-1 text-xl font-black text-slate-700">{resumo.pausadas}</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Pausadas</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial/80">{resumo.pausadas}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Progresso médio</p>
-            <p className="mt-1 text-xl font-black text-ink">{Math.round(resumo.progressoMedio)}%</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Progresso médio</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial">{Math.round(resumo.progressoMedio)}%</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-slate-500">Faltante total</p>
-            <p className="mt-1 text-xl font-black text-ink">{formatoMoeda.format(resumo.faltanteTotal)}</p>
+          <div className="rounded-2xl border border-graphite/10 bg-paper p-3">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-ink/60">Faltante total</p>
+            <p className="mt-1 text-xl font-semibold text-ink font-editorial">{formatoMoeda.format(resumo.faltanteTotal)}</p>
           </div>
         </div>
 
@@ -277,12 +277,12 @@ export default function MetasPage() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar meta"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+              className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
             />
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+              className="rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
             >
               <option value="all">Todos os status</option>
               <option value="in_progress">Em andamento</option>
@@ -302,7 +302,7 @@ export default function MetasPage() {
                 setMostrarFormulario(true);
               }
             }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
           >
             {mostrarFormulario ? "Fechar painel" : "Nova meta"}
           </button>
@@ -310,61 +310,61 @@ export default function MetasPage() {
 
         <div className={`mt-4 ${mostrarFormulario ? "grid gap-4 grid-cols-3" : ""}`}>
           {mostrarFormulario ? (
-            <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4 col-span-1">
+            <article className="rounded-2xl border border-graphite/10 bg-paper p-4 col-span-1">
               <h2 className="text-base font-bold text-ink">{editandoId ? `Editar meta #${editandoId}` : "Nova meta"}</h2>
               <form className="mt-3 space-y-3" onSubmit={salvarMeta}>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-slate-600">Nome da meta</span>
+                  <span className="mb-1 block text-ink/70">Nome da meta</span>
                   <input
                     value={form.title}
                     onChange={(e) => setForm((atual) => ({ ...atual, title: e.target.value }))}
                     placeholder="Ex.: Reserva de emergência"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                    className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                   />
                 </label>
 
                 <div className="grid gap-2 grid-cols-2">
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Valor alvo</span>
+                    <span className="mb-1 block text-ink/70">Valor alvo</span>
                     <input
                       type="number"
                       min="0.01"
                       step="0.01"
                       value={form.target_amount}
                       onChange={(e) => setForm((atual) => ({ ...atual, target_amount: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                      className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Valor atual</span>
+                    <span className="mb-1 block text-ink/70">Valor atual</span>
                     <input
                       type="number"
                       min="0"
                       step="0.01"
                       value={form.current_amount}
                       onChange={(e) => setForm((atual) => ({ ...atual, current_amount: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                      className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                     />
                   </label>
                 </div>
 
                 <div className="grid gap-2 grid-cols-2">
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Prazo</span>
+                    <span className="mb-1 block text-ink/70">Prazo</span>
                     <input
                       type="date"
                       value={form.due_date || ""}
                       min={hojeIso()}
                       onChange={(e) => setForm((atual) => ({ ...atual, due_date: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                      className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-slate-600">Prioridade</span>
+                    <span className="mb-1 block text-ink/70">Prioridade</span>
                     <select
                       value={form.priority}
                       onChange={(e) => setForm((atual) => ({ ...atual, priority: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                      className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                     >
                       <option value="high">Alta</option>
                       <option value="medium">Média</option>
@@ -374,17 +374,17 @@ export default function MetasPage() {
                 </div>
 
                 <label className="block text-sm">
-                  <span className="mb-1 block text-slate-600">Observações</span>
+                  <span className="mb-1 block text-ink/70">Observações</span>
                   <textarea
                     rows={3}
                     value={form.notes}
                     onChange={(e) => setForm((atual) => ({ ...atual, notes: e.target.value }))}
                     placeholder="Opcional"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink"
+                    className="w-full rounded-lg border border-graphite/20 px-3 py-2 text-sm outline-none focus:border-ink"
                   />
                 </label>
 
-                <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                <label className="inline-flex items-center gap-2 text-sm text-ink/80">
                   <input
                     type="checkbox"
                     checked={form.active}
@@ -403,7 +403,7 @@ export default function MetasPage() {
                       limparFormulario();
                       setMostrarFormulario(false);
                     }}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+                    className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
                   >
                     Cancelar
                   </button>
@@ -412,22 +412,22 @@ export default function MetasPage() {
             </article>
           ) : null}
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-4 col-span-2">
+          <article className="rounded-[24px] border border-graphite/10 bg-white/80 p-4 shadow-[0_12px_28px_rgba(19,20,23,0.08)] col-span-2">
             <h2 className="text-base font-bold text-ink">Lista de metas</h2>
-            <p className="mt-1 text-xs text-slate-500">Visualize progresso, prazo e prioridade.</p>
+            <p className="mt-1 text-xs text-ink/60">Visualize progresso, prazo e prioridade.</p>
 
             {metasFiltradas.length === 0 ? (
-              <p className="mt-4 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <p className="mt-4 rounded-lg bg-paper px-4 py-3 text-sm text-ink/70">
                 Nenhuma meta encontrada para os filtros selecionados.
               </p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {metasFiltradas.map((item) => (
-                  <li key={item.id} className="rounded-xl border border-slate-200 p-3">
+                  <li key={item.id} className="rounded-2xl border border-graphite/10 bg-paper p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <p className="font-semibold text-ink">{item.title}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-ink/60">
                           {item.due_date
                             ? item.prazoDias >= 0
                               ? `${item.prazoDias} dias para o prazo`
@@ -445,14 +445,14 @@ export default function MetasPage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 h-2 rounded-full bg-slate-100">
+                    <div className="mt-3 h-2 rounded-full bg-graphite/5">
                       <div
-                        className="h-2 rounded-full bg-sky-500"
+                        className="h-2 rounded-full bg-ink"
                         style={{ width: `${Math.min(100, Math.max(0, item.percentual))}%` }}
                       />
                     </div>
 
-                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-ink/70">
                       <span>
                         Atual: <strong>{formatoMoeda.format(item.atual)}</strong>
                       </span>
@@ -464,13 +464,13 @@ export default function MetasPage() {
                       </span>
                     </div>
 
-                    {item.notes ? <p className="mt-2 text-xs text-slate-500">{item.notes}</p> : null}
+                    {item.notes ? <p className="mt-2 text-xs text-ink/60">{item.notes}</p> : null}
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => iniciarEdicao(item)}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
+                        className="rounded-md border border-graphite/20 px-2 py-1 text-xs font-semibold text-ink/80"
                       >
                         Editar
                       </button>
@@ -487,7 +487,7 @@ export default function MetasPage() {
                         <button
                           type="button"
                           onClick={() => alternarStatusMeta(item)}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700"
+                          className="rounded-md border border-graphite/20 px-2 py-1 text-xs font-semibold text-ink/80"
                         >
                           {item.active ? "Pausar" : "Reativar"}
                         </button>
@@ -511,4 +511,7 @@ export default function MetasPage() {
     </main>
   );
 }
+
+
+
 

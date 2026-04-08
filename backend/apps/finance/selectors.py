@@ -1,4 +1,15 @@
-from .models import Account, Budget, CardPurchase, Category, CreditCard, Goal, Investment, Recurrence, Transaction
+from .models import (
+    Account,
+    Budget,
+    CardPurchase,
+    Category,
+    CreditCard,
+    CreditCardInvoice,
+    Goal,
+    Investment,
+    Recurrence,
+    Transaction,
+)
 
 
 def get_finance_overview_payload():
@@ -10,10 +21,13 @@ def get_finance_overview_payload():
             "transactions": "/api/finance/transactions/",
             "credit_cards": "/api/finance/credit-cards/",
             "card_purchases": "/api/finance/card-purchases/",
+            "credit_card_invoices": "/api/finance/credit-card-invoices/",
             "investments": "/api/finance/investimentos/",
             "goals": "/api/finance/metas/",
             "budgets": "/api/finance/orcamentos/",
             "recurrences": "/api/finance/recorrencias/",
+            "recurrences_generate": "/api/finance/recorrencias/gerar/",
+            "cashflow": "/api/finance/fluxo-caixa/",
         },
     }
 
@@ -39,6 +53,12 @@ def get_credit_cards_queryset(user):
 def get_card_purchases_queryset(user):
     return CardPurchase.objects.select_related("owner", "credit_card", "category").prefetch_related(
         "installments"
+    ).filter(owner=user)
+
+
+def get_credit_card_invoices_queryset(user):
+    return CreditCardInvoice.objects.select_related("owner", "credit_card").prefetch_related(
+        "items", "payments"
     ).filter(owner=user)
 
 

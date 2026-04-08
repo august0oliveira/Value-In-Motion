@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -6,6 +8,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 class Account(models.Model):
     name = models.CharField(max_length=120)
     account_type = models.CharField(max_length=40, default="checking")
+    initial_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -23,7 +26,7 @@ class Account(models.Model):
         despesas = self.transactions.filter(
             transaction_type="expense"
         ).aggregate(t=Sum("amount"))["t"] or 0
-        return receitas - despesas
+        return self.initial_balance + receitas - despesas
 
     def __str__(self):
         return self.name
@@ -199,6 +202,107 @@ class CardInstallment(models.Model):
         return f"{self.purchase.description} {self.installment_number}/{self.purchase.installments_count}"
 
 
+class CreditCardInvoice(models.Model):
+    STATUS_CHOICES = (
+        ("open", "Open"),
+        ("closed", "Closed"),
+        ("paid", "Paid"),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="credit_card_invoices",
+    )
+    credit_card = models.ForeignKey(
+        CreditCard,
+        on_delete=models.CASCADE,
+        related_name="invoices",
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+    closing_date = models.DateField()
+    due_date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="open")
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-period_end", "-id")
+        unique_together = ("credit_card", "period_start", "period_end")
+
+    @property
+    def is_overdue(self):
+        return self.status != "paid" and date.today() > self.due_date
+
+    def __str__(self):
+        return f"{self.credit_card.name} {self.period_start} - {self.period_end}"
+
+
+class CreditCardInvoiceItem(models.Model):
+    invoice = models.ForeignKey(
+        CreditCardInvoice,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+    transaction = models.ForeignKey(
+        Transaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoice_items",
+    )
+    installment = models.ForeignKey(
+        CardInstallment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoice_items",
+    )
+    description = models.CharField(max_length=255, blank=True, default="")
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    occurred_on = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("occurred_on", "id")
+        unique_together = ("invoice", "transaction")
+
+    def __str__(self):
+        return f"{self.invoice.credit_card.name} {self.amount}"
+
+
+class CreditCardInvoicePayment(models.Model):
+    invoice = models.ForeignKey(
+        CreditCardInvoice,
+        on_delete=models.CASCADE,
+        related_name="payments",
+    )
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="invoice_payments",
+    )
+    transaction = models.OneToOneField(
+        Transaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoice_payment",
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    paid_on = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-paid_on", "-id")
+
+    def __str__(self):
+        return f"{self.invoice.credit_card.name} {self.amount}"
+
+
 class Investment(models.Model):
     INVESTMENT_TYPE_CHOICES = (
         ("renda_fixa", "Renda fixa"),
@@ -342,3 +446,27 @@ class Recurrence(models.Model):
 
     def __str__(self):
         return self.description
+
+
+class RecurrenceOccurrence(models.Model):
+    recurrence = models.ForeignKey(
+        Recurrence,
+        on_delete=models.CASCADE,
+        related_name="occurrences",
+    )
+    occurred_on = models.DateField()
+    transaction = models.OneToOneField(
+        Transaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recurrence_occurrence",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-occurred_on", "-id")
+        unique_together = ("recurrence", "occurred_on")
+
+    def __str__(self):
+        return f"{self.recurrence.description} {self.occurred_on}"

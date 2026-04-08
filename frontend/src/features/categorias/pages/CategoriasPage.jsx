@@ -114,10 +114,10 @@ export default function CategoriasPage() {
 
   return (
     <main className="mx-auto max-w-7xl">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Modulo</p>
-        <h1 className="mt-2 text-2xl font-black text-ink">Categorias</h1>
-        <p className="mt-2 text-sm text-slate-600">
+      <section className="rounded-[24px] border border-graphite/10 bg-white/80 p-8 shadow-[0_14px_30px_rgba(19,20,23,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/60">Modulo</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink font-editorial">Categorias</h1>
+        <p className="mt-2 text-sm text-ink/70">
           Organize receitas e despesas por categoria para melhorar analises no dashboard e relatorios.
         </p>
 
@@ -137,7 +137,7 @@ export default function CategoriasPage() {
                 setMostrarFormulario(true);
               }
             }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="rounded-lg border border-graphite/20 px-4 py-2 text-sm font-semibold text-ink/80"
           >
             {mostrarFormulario ? "Fechar painel" : "Nova categoria"}
           </button>
@@ -173,4 +173,6 @@ export default function CategoriasPage() {
     </main>
   );
 }
+
+
 

@@ -300,7 +300,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl">
+    <main className="mx-auto max-w-7xl space-y-6">
       <DashboardHeader
         nomeUsuario={nomeUsuario}
         onNovaReceita={() => abrirModalLancamento("income")}
@@ -318,7 +318,7 @@ export default function DashboardPage() {
       {carregando ? (
         <section className="mt-6 grid gap-4 grid-cols-5">
           {["a", "b", "c", "d", "e"].map((item) => (
-            <div key={item} className="h-24 animate-pulse rounded-2xl bg-slate-200" />
+            <div key={item} className="h-24 animate-pulse rounded-2xl bg-graphite/10" />
           ))}
         </section>
       ) : null}
@@ -372,4 +372,5 @@ export default function DashboardPage() {
     </main>
   );
 }
+
 
